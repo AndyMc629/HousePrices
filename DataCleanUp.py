@@ -94,16 +94,20 @@ plt.savefig("TypeHisto.pdf")
 # APPLY ML ALGO
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# NORMALISE, SPLIT INTO TEST/TRAIN
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 #Normalise
 #data=(data-data.min().astype(np.float32))/(data.max()-data.min())
 data=normalise(data)
-plt.figure(3)
-data.boxplot(column='Price',by='InLondon')
-plt.savefig("Boxplot.pdf")
-plt.show()
 
-#Linear regression.
-from sklearn import linear_model
+#plt.figure(3)
+#data.boxplot(column='Price',by='InLondon')
+#plt.savefig("Boxplot.pdf")
+#plt.show()
+
+#test/train split in Pandas.
 train=data.sample(frac=0.8,random_state=200)
 test=data.drop(train.index)
 
@@ -117,35 +121,62 @@ y_np_test=test.values[:,0].astype(np.float32)
 print y_np_test
 print "\n \n", y_np_train
 
-#create lin regression obj
-linear=linear_model.LinearRegression()
 
-#different features
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# MODEL
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+from sklearn.cross_validation import *
+def train_and_evaluate(clf, X_train, y_train):
+	clf.fit(X_train, y_train)
+	print "Coefficient of determination on training set:",clf.score(X_train, y_train)
+	# create a k-fold cross validation iterator of k=5 folds
+	cv = KFold(X_train.shape[0], 10, shuffle=True,random_state=33)
+	scores = cross_val_score(clf, X_train, y_train, cv=cv)
+	print "Average coefficient of determination using 5-fold crossvalidation:",np.mean(scores)
 
-# Train the model using the training sets and check score
-linear.fit(x_np_train, y_np_train)
-score = linear.score(x_np_train, y_np_train)
+#LINEAR REGRESSION
+from sklearn import linear_model
+#create lin reg object.
+#linear=linear_model.LinearRegression()
+linear=linear_model.SGDRegressor(loss='squared_loss',
+penalty=None, random_state=42)
 
-print "score = ", score 
+#SVM for REGRESSION
+from sklearn import svm
+svr = svm.SVR(kernel='linear')
 
-#Equation coefficient and Intercept
-print('Coefficient: \n', linear.coef_)
-print('Intercept: \n', linear.intercept_)
+#RANDOM FORESTS for REGRESSION
+from sklearn import ensemble
+extraTrees=ensemble.ExtraTreesRegressor(n_estimators=10, random_state=42)
+
+#GAUSSIAN PROCESSES
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import WhiteKernel, ExpSineSquared
+gpr=GaussianProcessRegressor(alpha=0.0)
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# TRAINING AND CROSS-VALIDATION
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#print "SGDReg: ", train_and_evaluate(linear,x_np_train,y_np_train), "\n"
+#print "SVR: ", train_and_evaluate(svr,x_np_train,y_np_train)
+#print "Extra trees: ", train_and_evaluate(extraTrees, x_np_train,y_np_train)
+print "gpr: ", train_and_evaluate(gpr,x_np_train, y_np_train)
+
 #Predict Output
-predicted= linear.predict(x_np_test)
+#predicted= linear.predict(x_np_test)
 
-fig,ax=plt.subplots()
-ax.scatter(y_np_test,predicted)
+#fig,ax=plt.subplots()
+#ax.scatter(y_np_test,predicted)
 #ax.plot([y_np_test.min(), y_np_test.max()], [y_np_test.min(), y_np_test.max()], 'k--', lw=4)
-ax.set_xlabel('Measured')
-ax.set_ylabel('Predicted')
+#ax.set_xlabel('Measured')
+#ax.set_ylabel('Predicted')
 
-fig,ax=plt.subplots()
-ax.scatter(x_np_train[:,2],y_np_train)
-ax.set_xlabel('InLondon')
-ax.set_ylabel('Price')
+#fig,ax=plt.subplots()
+#ax.scatter(x_np_train[:,2],y_np_train)
+#ax.set_xlabel('InLondon')
+#ax.set_ylabel('Price')
 
-plt.show()
+#plt.show()
 #print predicted
 
 
