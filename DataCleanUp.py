@@ -37,7 +37,8 @@ plt.savefig("PropTypeHisto.pdf")
 #define a dictionary of the values and call map.
 #changes property types to PropertyVals in place.
 #Need this when not binary options like above.
-PropertyVals={'S':'100','T':'101','F':'001', 'D':'000', 'O':'010'}
+#PropertyVals={'S':'100','T':'101','F':'001', 'D':'000', 'O':'010'}
+PropertyVals={'S':'1','T':'2','F':'3', 'D':'4', 'O':'5'}
 data['PropertyType']=data['PropertyType'].map(PropertyVals)
 
 data.Price=data.Price/1000
