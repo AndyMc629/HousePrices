@@ -3,6 +3,14 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from pandas.tools.plotting import scatter_matrix
 
+def normalise(df):
+	result = df.copy()
+	for feature_name in df.columns:
+        	max_value = df[feature_name].astype(np.float32).max()
+        	min_value = df[feature_name].astype(np.float32).min()
+        	result[feature_name] = (df[feature_name].astype(np.float32) - min_value) / (max_value - min_value)
+    	return result	
+
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # CLEAN UP DATA - THEN APPLY ML ALGO
 #
@@ -41,8 +49,9 @@ plt.savefig("PropTypeHisto.pdf")
 PropertyVals={'S':'1','T':'2','F':'3', 'D':'4', 'O':'5'}
 data['PropertyType']=data['PropertyType'].map(PropertyVals)
 
-data.Price=data.Price/1000
-data.Price=data.Price.round()
+#Normalise everything
+#data.Price=data.Price/1000
+#data.Price=data.Price.round()
 
 #remove rows where house prices > 2 mil.
 #data = data.drop(data[data.Price>2000].index)
@@ -78,16 +87,20 @@ data[data.PropertyType=='000'].Price.hist(bins=1000,alpha=0.4,color='green',labe
 plt.xlabel('Price (k)')
 plt.legend()
 plt.savefig("TypeHisto.pdf")
-
-plt.figure(3)
-data.boxplot(column='Price',by='InLondon')
-plt.savefig("Boxplot.pdf")
-
 """
+
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # DATA CLEANED AND SUMMARY STATS PLOTTED
 # APPLY ML ALGO
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+#Normalise
+#data=(data-data.min().astype(np.float32))/(data.max()-data.min())
+data=normalise(data)
+plt.figure(3)
+data.boxplot(column='Price',by='InLondon')
+plt.savefig("Boxplot.pdf")
+plt.show()
 
 #Linear regression.
 from sklearn import linear_model
