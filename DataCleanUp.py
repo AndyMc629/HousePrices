@@ -20,7 +20,7 @@ def normalise(df):
 data=pd.read_csv("pp-2015-part1.csv", names=["TUI","Price","DateOfTransfer","Postcode","PropertyType","Old/New", "Duration","PAON", "SAON","Street","Locality","Town","District","County","PPDCategoryType","RecordStatus"])
 
 #drop unwanted/un-needed data. Axis=1 -> column.
-data.drop(['TUI','DateOfTransfer','Postcode','Old/New','PAON','SAON', 'Street','Locality', 'District','County','PPDCategoryType','RecordStatus'],axis=1,inplace=True) 
+data.drop(['TUI','Postcode','Old/New','PAON','SAON', 'Street','Locality', 'District','County','PPDCategoryType','RecordStatus'],axis=1,inplace=True) 
 
 #
 # PREPARE DATA FOR ANALYSIS
@@ -28,6 +28,11 @@ data.drop(['TUI','DateOfTransfer','Postcode','Old/New','PAON','SAON', 'Street','
 # in London = 1, out of London = 0
 # lease duration => 0= L, 1=F
 # prop type => 000=D,100=S,010=T,001=F
+
+#convert dates to number of days since start of data.
+data['DateOfTransfer'] = pd.to_datetime(data['DateOfTransfer'])
+data['DateOfTransfer']=(data['DateOfTransfer'] - data['DateOfTransfer'].min())/np.timedelta64(1,'D')
+
 
 #map to in and out of London values
 data['InLondon'] = ['1' if x=="LONDON" else '0' for x in data.Town]
@@ -130,7 +135,7 @@ def train_and_evaluate(clf, X_train, y_train):
 	clf.fit(X_train, y_train)
 	print "Coefficient of determination on training set:",clf.score(X_train, y_train)
 	# create a k-fold cross validation iterator of k=5 folds
-	cv = KFold(X_train.shape[0], 10, shuffle=True,random_state=33)
+	cv = KFold(X_train.shape[0], 5, shuffle=True,random_state=33)
 	scores = cross_val_score(clf, X_train, y_train, cv=cv)
 	print "Average coefficient of determination using 5-fold crossvalidation:",np.mean(scores)
 
@@ -138,8 +143,7 @@ def train_and_evaluate(clf, X_train, y_train):
 from sklearn import linear_model
 #create lin reg object.
 #linear=linear_model.LinearRegression()
-linear=linear_model.SGDRegressor(loss='squared_loss',
-penalty=None, random_state=42)
+linear=linear_model.SGDRegressor(loss='squared_loss', penalty=None, random_state=42)
 
 #SVM for REGRESSION
 from sklearn import svm
@@ -150,17 +154,20 @@ from sklearn import ensemble
 extraTrees=ensemble.ExtraTreesRegressor(n_estimators=10, random_state=42)
 
 #GAUSSIAN PROCESSES
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import WhiteKernel, ExpSineSquared
-gpr=GaussianProcessRegressor(alpha=0.0)
+#from sklearn.gaussian_process import GaussianProcessRegressor
+#from sklearn.gaussian_process.kernels import WhiteKernel, ExpSineSquared, RBF, ConstantKernel as C
+#kernel = C(1.0, (1e-3, 1e3)) * RBF(10, (1e-2, 1e2))
+#gpr=GaussianProcessRegressor(kernel=kernel,alpha=0,optimizer=None, normalize_y=True)
+#gpr.fit(x_np_train,y_np_train)
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # TRAINING AND CROSS-VALIDATION
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#print "SGDReg: ", train_and_evaluate(linear,x_np_train,y_np_train), "\n"
+print "SGDReg: ", train_and_evaluate(linear,x_np_train,y_np_train), "\n"
+print "coefficients: ", linear.coef_
 #print "SVR: ", train_and_evaluate(svr,x_np_train,y_np_train)
 #print "Extra trees: ", train_and_evaluate(extraTrees, x_np_train,y_np_train)
-print "gpr: ", train_and_evaluate(gpr,x_np_train, y_np_train)
+#print "gpr: ", train_and_evaluate(gpr,x_np_train, y_np_train)
 
 #Predict Output
 #predicted= linear.predict(x_np_test)
