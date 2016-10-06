@@ -142,8 +142,21 @@ def train_and_evaluate(clf, X_train, y_train):
 #LINEAR REGRESSION
 from sklearn import linear_model
 #create lin reg object.
-#linear=linear_model.LinearRegression()
-linear=linear_model.SGDRegressor(loss='squared_loss', penalty=None, random_state=42)
+linear=linear_model.LinearRegression()
+#linear=linear_model.SGDRegressor(loss='squared_loss', penalty=None, random_state=42)
+
+#TEST
+def f(x):
+    """The function to predict."""
+    return 2*x
+
+# ----------------------------------------------------------------------
+#  First the noiseless case
+X = np.atleast_2d([1., 3., 5., 6., 7., 8.]).T
+# Observations
+y = f(X).ravel()
+print train_and_evaluate(linear,X,y)
+
 
 #SVM for REGRESSION
 from sklearn import svm
@@ -163,8 +176,8 @@ extraTrees=ensemble.ExtraTreesRegressor(n_estimators=10, random_state=42)
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # TRAINING AND CROSS-VALIDATION
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-print "SGDReg: ", train_and_evaluate(linear,x_np_train,y_np_train), "\n"
-print "coefficients: ", linear.coef_
+#print "SGDReg: ", train_and_evaluate(linear,x_np_train,y_np_train), "\n"
+#print "coefficients: ", linear.coef_
 #print "SVR: ", train_and_evaluate(svr,x_np_train,y_np_train)
 #print "Extra trees: ", train_and_evaluate(extraTrees, x_np_train,y_np_train)
 #print "gpr: ", train_and_evaluate(gpr,x_np_train, y_np_train)
